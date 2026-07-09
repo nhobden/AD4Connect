@@ -16,9 +16,9 @@ final class ConfigStoreTests: XCTestCase {
 
     func testSaveThenLoadRoundtrip() throws {
         let (env, _) = tempEnv()
-        try ConfigStore.save(["host": "192.168.68.119", "port": "8899"], environment: env)
+        try ConfigStore.save(["host": "192.168.1.50", "port": "8899"], environment: env)
         let loaded = ConfigStore.load(environment: env)
-        XCTAssertEqual(loaded["host"], "192.168.68.119")
+        XCTAssertEqual(loaded["host"], "192.168.1.50")
         XCTAssertEqual(loaded["port"], "8899")
     }
 

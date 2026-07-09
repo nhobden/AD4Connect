@@ -46,8 +46,8 @@ Build it with `cd macos && ./build_app.sh`, or open `macos/Package.swift` in Xco
 Rather than passing `--host` on every command, store connection defaults once:
 
 ```bash
-ad4ctl config set --host 192.168.68.119
-ad4ctl config set --host 192.168.68.119 --port 8899 --timeout 8
+ad4ctl config set --host 192.168.1.50
+ad4ctl config set --host 192.168.1.50 --port 8899 --timeout 8
 ```
 
 Then commands can be run without flags:
@@ -61,7 +61,7 @@ A flag always overrides the stored value, so you can point at a different printe
 temporarily:
 
 ```bash
-ad4ctl --host 192.168.68.200 status
+ad4ctl --host 192.168.1.60 status
 ```
 
 Inspect or clear the stored config:
@@ -78,35 +78,35 @@ Set `AD4CONNECT_CONFIG` to point at a different file.
 ## Usage
 
 ```bash
-ad4ctl --host 192.168.68.119 status
-ad4ctl --host 192.168.68.119 files
-ad4ctl --host 192.168.68.119 watch
+ad4ctl --host 192.168.1.50 status
+ad4ctl --host 192.168.1.50 files
+ad4ctl --host 192.168.1.50 watch
 ```
 
 Upload only:
 
 ```bash
-ad4ctl --host 192.168.68.119 upload ~/Downloads/model.gcode --remote-name model.gcode
+ad4ctl --host 192.168.1.50 upload ~/Downloads/model.gcode --remote-name model.gcode
 ```
 
 Upload and start:
 
 ```bash
-ad4ctl --host 192.168.68.119 upload ~/Downloads/model.gcode --remote-name model.gcode --start
+ad4ctl --host 192.168.1.50 upload ~/Downloads/model.gcode --remote-name model.gcode --start
 ```
 
 Print an existing printer-side file:
 
 ```bash
-ad4ctl --host 192.168.68.119 print model.gcode
+ad4ctl --host 192.168.1.50 print model.gcode
 ```
 
 Pause/resume/cancel:
 
 ```bash
-ad4ctl --host 192.168.68.119 pause
-ad4ctl --host 192.168.68.119 resume
-ad4ctl --host 192.168.68.119 cancel
+ad4ctl --host 192.168.1.50 pause
+ad4ctl --host 192.168.1.50 resume
+ad4ctl --host 192.168.1.50 cancel
 ```
 
 ## Protocol notes

@@ -2,7 +2,7 @@
 """OrcaSlicer post-processing helper.
 
 Usage from OrcaSlicer post-processing command:
-  /path/to/python /path/to/scripts/orca_ad4_upload.py --host 192.168.68.119 --start
+  /path/to/python /path/to/scripts/orca_ad4_upload.py --host 192.168.1.50 --start
 
 Orca passes the generated G-code path as the final argument in many configurations.
 If your Orca build does not, use the CLI manually for now.

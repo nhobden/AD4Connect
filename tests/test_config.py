@@ -17,9 +17,9 @@ def test_load_empty_when_no_file(store):
 
 
 def test_save_then_load_roundtrip(store):
-    store.save_config({"host": "192.168.68.119", "port": 8899})
+    store.save_config({"host": "192.168.1.50", "port": 8899})
     loaded = store.load_config()
-    assert loaded["host"] == "192.168.68.119"
+    assert loaded["host"] == "192.168.1.50"
     assert loaded["port"] == "8899"
 
 

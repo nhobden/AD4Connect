@@ -35,6 +35,40 @@ python -m pip install --upgrade pip
 python -m pip install -e .
 ```
 
+## Configuration
+
+Rather than passing `--host` on every command, store connection defaults once:
+
+```bash
+ad4ctl config set --host 192.168.68.119
+ad4ctl config set --host 192.168.68.119 --port 8899 --timeout 8
+```
+
+Then commands can be run without flags:
+
+```bash
+ad4ctl status
+ad4ctl files
+```
+
+A flag always overrides the stored value, so you can point at a different printer
+temporarily:
+
+```bash
+ad4ctl --host 192.168.68.200 status
+```
+
+Inspect or clear the stored config:
+
+```bash
+ad4ctl config show
+ad4ctl config path
+ad4ctl config unset port
+```
+
+The config lives at `~/.config/ad4connect/config.ini` (respecting `XDG_CONFIG_HOME`).
+Set `AD4CONNECT_CONFIG` to point at a different file.
+
 ## Usage
 
 ```bash

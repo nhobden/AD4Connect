@@ -3,16 +3,21 @@ from __future__ import annotations
 import argparse
 import sys
 import time
-from pathlib import Path
 
 from ad4core import FlashForgeClient
+from ad4ctl import config as config_store
+
+DEFAULT_PORT = 8899
+DEFAULT_TIMEOUT = 8.0
 
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="ad4ctl")
-    parser.add_argument("--host", required=True, help="Printer IP address or hostname")
-    parser.add_argument("--port", type=int, default=8899, help="Printer TCP port, default 8899")
-    parser.add_argument("--timeout", type=float, default=8.0)
+    # Defaults are None so we can tell an explicit flag apart from "fall back to
+    # the stored config". Resolution happens after parsing in _resolve_connection.
+    parser.add_argument("--host", help="Printer IP address or hostname (or store it with 'ad4ctl config set')")
+    parser.add_argument("--port", type=int, help=f"Printer TCP port, default {DEFAULT_PORT}")
+    parser.add_argument("--timeout", type=float, help=f"Socket timeout in seconds, default {DEFAULT_TIMEOUT}")
 
     sub = parser.add_subparsers(dest="command", required=True)
     sub.add_parser("status")
@@ -36,8 +41,24 @@ def main(argv: list[str] | None = None) -> int:
     sub.add_parser("resume")
     sub.add_parser("cancel")
 
+    config_cmd = sub.add_parser("config", help="View or edit stored connection defaults")
+    config_sub = config_cmd.add_subparsers(dest="config_action", required=True)
+    config_sub.add_parser("show", help="Print the stored config")
+    config_sub.add_parser("path", help="Print the config file location")
+    set_cmd = config_sub.add_parser("set", help="Store one or more connection defaults")
+    set_cmd.add_argument("--host", help="Printer IP address or hostname")
+    set_cmd.add_argument("--port", type=int)
+    set_cmd.add_argument("--timeout", type=float)
+    unset_cmd = config_sub.add_parser("unset", help="Remove stored keys")
+    unset_cmd.add_argument("keys", nargs="+", choices=config_store.KEYS)
+
     args = parser.parse_args(argv)
-    client = FlashForgeClient(args.host, args.port, timeout=args.timeout)
+
+    if args.command == "config":
+        return _handle_config(args)
+
+    host, port, timeout = _resolve_connection(args, parser)
+    client = FlashForgeClient(host, port, timeout=timeout)
 
     try:
         if args.command == "status":
@@ -81,6 +102,63 @@ def main(argv: list[str] | None = None) -> int:
     except Exception as exc:  # noqa: BLE001 - CLI should show clear errors
         print(f"Error: {exc}", file=sys.stderr)
         return 1
+    return 0
+
+
+def _resolve_connection(args, parser) -> tuple[str, int, float]:
+    """Combine CLI flags with the stored config: flag > config file > default."""
+    stored = config_store.load_config()
+    host = args.host or stored.get("host")
+    if not host:
+        parser.error(
+            "no host given: pass --host <ip> or store one with "
+            "'ad4ctl config set --host <ip>'"
+        )
+    port = args.port if args.port is not None else int(stored.get("port", DEFAULT_PORT))
+    timeout = (
+        args.timeout if args.timeout is not None else float(stored.get("timeout", DEFAULT_TIMEOUT))
+    )
+    return host, port, timeout
+
+
+def _handle_config(args) -> int:
+    path = config_store.config_path()
+
+    if args.config_action == "path":
+        print(path)
+        return 0
+
+    if args.config_action == "show":
+        stored = config_store.load_config()
+        if not stored:
+            print(f"No config stored yet ({path}).")
+            print("Set one with: ad4ctl config set --host <ip>")
+            return 0
+        print(f"# {path}")
+        for key in config_store.KEYS:
+            if key in stored:
+                print(f"{key} = {stored[key]}")
+        return 0
+
+    if args.config_action == "set":
+        updates = {key: getattr(args, key) for key in config_store.KEYS if getattr(args, key) is not None}
+        if not updates:
+            print("Nothing to set. Pass --host, --port, and/or --timeout.", file=sys.stderr)
+            return 2
+        saved = config_store.save_config(updates)
+        print(f"Saved to {saved}")
+        for key, value in updates.items():
+            print(f"{key} = {value}")
+        return 0
+
+    if args.config_action == "unset":
+        removed = config_store.unset_config(args.keys)
+        if removed:
+            print(f"Removed: {', '.join(removed)}")
+        else:
+            print("Nothing removed (keys were not set).")
+        return 0
+
     return 0
 
 

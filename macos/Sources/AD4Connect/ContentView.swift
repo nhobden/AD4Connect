@@ -4,6 +4,8 @@ import AD4ConnectKit
 
 struct ContentView: View {
     @EnvironmentObject var vm: PrinterViewModel
+    @State private var showDiscovery = false
+    @State private var showCamera = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -19,6 +21,9 @@ struct ContentView: View {
             Divider()
             logConsole
         }
+        .sheet(isPresented: $showCamera) {
+            CameraPanel(host: vm.host.trimmingCharacters(in: .whitespaces))
+        }
     }
 
     // MARK: - Connection bar
@@ -33,6 +38,8 @@ struct ContentView: View {
             Button("Save") { vm.saveConnection() }
                 .help("Store these as defaults (shared with the ad4ctl CLI)")
 
+            discoverButton
+
             Divider().frame(height: 20)
 
             Button {
@@ -43,6 +50,14 @@ struct ContentView: View {
             }
             .keyboardShortcut("r")
             .disabled(!vm.isConnectable || vm.isBusy)
+
+            Button {
+                showCamera = true
+            } label: {
+                Label("Camera", systemImage: "video")
+            }
+            .disabled(!vm.isConnectable)
+            .help("Show the printer's live camera")
 
             Toggle("Auto", isOn: Binding(
                 get: { vm.autoRefresh },
@@ -55,6 +70,54 @@ struct ContentView: View {
             if vm.isBusy { ProgressView().scaleEffect(0.6).frame(width: 20, height: 20) }
         }
         .padding(10)
+    }
+
+    private var discoverButton: some View {
+        Button {
+            showDiscovery = true
+            vm.discover()
+        } label: {
+            Label("Discover", systemImage: "dot.radiowaves.left.and.right")
+        }
+        .disabled(vm.isDiscovering)
+        .popover(isPresented: $showDiscovery, arrowEdge: .bottom) {
+            discoveryResults
+        }
+    }
+
+    private var discoveryResults: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text("Printers on your network").font(.headline)
+                Spacer()
+                if vm.isDiscovering { ProgressView().scaleEffect(0.6) }
+            }
+            if vm.discovered.isEmpty {
+                Text(vm.isDiscovering ? "Scanning…" : "None found. Check the printer is on the same network.")
+                    .foregroundStyle(.secondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            } else {
+                ForEach(vm.discovered) { printer in
+                    Button {
+                        vm.selectDiscovered(printer)
+                        showDiscovery = false
+                    } label: {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(printer.name).fontWeight(.medium)
+                            Text("\(printer.ip):\(printer.port)")
+                                .font(.caption).foregroundStyle(.secondary)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            Divider()
+            Button("Rescan") { vm.discover() }.disabled(vm.isDiscovering)
+        }
+        .padding(12)
+        .frame(width: 280)
     }
 
     // MARK: - Status panel

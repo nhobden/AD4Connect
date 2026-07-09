@@ -21,6 +21,10 @@ final class PrinterViewModel: ObservableObject {
     @Published var uploadProgress: Double?
     @Published var force: Bool = false
 
+    // Discovery
+    @Published var isDiscovering: Bool = false
+    @Published var discovered: [DiscoveredPrinter] = []
+
     private let queue = DispatchQueue(label: "com.ad4connect.io")
     private var refreshTimer: Timer?
     private let refreshInterval: TimeInterval = 5
@@ -59,6 +63,31 @@ final class PrinterViewModel: ObservableObject {
         } catch {
             appendLog("Could not save config: \(error.localizedDescription)")
         }
+    }
+
+    // MARK: - Discovery
+
+    func discover() {
+        guard !isDiscovering else { return }
+        isDiscovering = true
+        discovered = []
+        appendLog("Scanning local network for printers…")
+        queue.async {
+            let results = PrinterDiscovery.discover(timeout: 3.0)
+            DispatchQueue.main.async {
+                self.discovered = results
+                self.isDiscovering = false
+                self.appendLog("Discovery found \(results.count) printer(s).")
+            }
+        }
+    }
+
+    func selectDiscovered(_ printer: DiscoveredPrinter) {
+        host = printer.ip
+        port = String(printer.port)
+        appendLog("Selected \(printer.name) at \(printer.ip):\(printer.port)")
+        refreshStatus()
+        refreshFiles()
     }
 
     // MARK: - Commands

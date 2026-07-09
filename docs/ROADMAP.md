@@ -38,6 +38,8 @@ See `macos/` for the native SwiftUI app (protocol ported to Swift in `AD4Connect
 - [x] Start/pause/resume/cancel
 - [x] Preference storage (shares `~/.config/ad4connect/config.ini` with the CLI)
 - [x] Packaged `.app` (via `macos/build_app.sh`; Xcode Archive for signed builds)
+- [x] Printer discovery (UDP multicast/broadcast)
+- [x] Webcam view (MJPEG stream from the built-in camera)
 - [ ] Drag/drop upload
 - [ ] App icon
 - [ ] Code signing / notarization

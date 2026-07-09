@@ -15,6 +15,24 @@ final class StatusParserTests: XCTestCase {
         XCTAssertEqual(status.progressPercent, 9.0)
     }
 
+    // Real hardware sends CRLF line endings and extra header lines. Swift treats
+    // "\r\n" as one Character, which broke an earlier split-based parser.
+    func testParseStatusCRLFWithHeaderLines() {
+        let m119 = "CMD M119 Received.\r\nEndstop: X-max:0 Y-max:0 Z-max:0\r\n"
+            + "MachineStatus: BUILDING_FROM_SD\r\nMoveMode: MOVING\r\n"
+            + "Status: S:1 L:0 J:0 F:0\r\nLED: 1\r\nCurrentFile: test.gcode\r\nok\r\n"
+        let m105 = "CMD M105 Received.\r\nT0:220/220 B:60/60\r\nok\r\n"
+        let m27 = "CMD M27 Received.\r\nSD printing byte 71/100\r\nLayer: 0/0\r\nok\r\n"
+        let status = StatusParser.parseStatus(m119, m105, m27)
+        XCTAssertEqual(status.machineStatus, "BUILDING_FROM_SD")
+        XCTAssertEqual(status.moveMode, "MOVING")
+        XCTAssertEqual(status.currentFile, "test.gcode")
+        XCTAssertEqual(status.nozzleCurrent, 220)
+        XCTAssertEqual(status.bedCurrent, 60)
+        XCTAssertEqual(status.progressPercent, 71.0)
+        XCTAssertTrue(status.isPrinting)
+    }
+
     func testParseFileList() {
         let raw = "D\u{fffd}\u{fffd}/data/test.gcode::\u{fffd}\u{fffd}/data/Owlbear.gx::\u{fffd}\u{fffd}"
         XCTAssertEqual(StatusParser.parseFileList(raw), ["/data/test.gcode", "/data/Owlbear.gx"])

@@ -43,6 +43,14 @@ cat > "${APP_DIR}/Contents/Info.plist" <<PLIST
     <key>LSMinimumSystemVersion</key>    <string>13.0</string>
     <key>NSPrincipalClass</key>          <string>NSApplication</string>
     <key>NSHighResolutionCapable</key>   <true/>
+    <!-- Printer discovery uses UDP multicast/broadcast on the LAN. -->
+    <key>NSLocalNetworkUsageDescription</key>
+    <string>AD4Connect discovers and controls FlashForge printers on your local network.</string>
+    <!-- The camera stream is plain HTTP on the LAN; allow it without HTTPS. -->
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsLocalNetworking</key><true/>
+    </dict>
 </dict>
 </plist>
 PLIST

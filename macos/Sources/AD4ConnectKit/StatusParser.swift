@@ -53,7 +53,10 @@ public enum StatusParser {
     // MARK: - Helpers
 
     private static func valueAfter(_ text: String, prefix: String) -> String? {
-        for rawLine in text.split(separator: "\n", omittingEmptySubsequences: false) {
+        // Split on any newline. NB: printer responses use CRLF, and Swift treats
+        // "\r\n" as a SINGLE Character, so split(separator: "\n") would not match.
+        // Character.isNewline correctly recognises the CRLF grapheme cluster.
+        for rawLine in text.split(whereSeparator: { $0.isNewline }) {
             let line = rawLine.trimmingCharacters(in: .whitespaces)
             if line.hasPrefix(prefix) {
                 let value = line.dropFirst(prefix.count).trimmingCharacters(in: .whitespaces)

@@ -29,10 +29,15 @@
 
 ## v1.0 macOS app
 
-- [ ] SwiftUI app shell
-- [ ] Status panel
-- [ ] File browser
-- [ ] Upload drag/drop
-- [ ] Start/pause/resume/cancel
-- [ ] Preference storage
-- [ ] Packaged `.app`
+See `macos/` for the native SwiftUI app (protocol ported to Swift in `AD4ConnectKit`).
+
+- [x] SwiftUI app shell
+- [x] Status panel
+- [x] File browser
+- [x] Upload (file picker; drag/drop still to do)
+- [x] Start/pause/resume/cancel
+- [x] Preference storage (shares `~/.config/ad4connect/config.ini` with the CLI)
+- [x] Packaged `.app` (via `macos/build_app.sh`; Xcode Archive for signed builds)
+- [ ] Drag/drop upload
+- [ ] App icon
+- [ ] Code signing / notarization

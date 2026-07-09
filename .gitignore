@@ -7,3 +7,9 @@ build/
 .DS_Store
 .pytest_cache/
 .ruff_cache/
+
+# Swift / SwiftPM (macos app)
+.build/
+.swiftpm/
+*.xcodeproj
+Package.resolved

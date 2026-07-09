@@ -35,6 +35,12 @@ python -m pip install --upgrade pip
 python -m pip install -e .
 ```
 
+## macOS app
+
+A native SwiftUI app lives in [`macos/`](macos/). It reimplements the printer
+protocol in Swift (no Python runtime needed) and shares the CLI's stored config.
+Build it with `cd macos && ./build_app.sh`, or open `macos/Package.swift` in Xcode.
+
 ## Configuration
 
 Rather than passing `--host` on every command, store connection defaults once:
